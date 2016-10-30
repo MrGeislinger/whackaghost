@@ -9,8 +9,13 @@ FPS = 10  # game has very simple animations and requires only slow refreshes
 WINDOWWIDTH = 1600  # game will take up whole screen on decent monitor
 WINDOWHEIGHT = 900
 
-#
+# Color definitions
 BLACK = (0,0,0)
+
+# Timer to check if things have changed in past 1/10th second or 100ms
+UPDATETIMER, UPDATETIME = pygame.USEREVENT+1, 100
+pygame.time.set_timer(UPDATETIMER, UPDATETIME)
+
 
 class Ghost(pygame.sprite.Sprite):
     '''A ghost that will born and then escape if her lifespan finishes or dies
@@ -51,12 +56,14 @@ class Ghost(pygame.sprite.Sprite):
         self.isAlive = False
         self.image = pygame.image.load(
             os.path.join('images','ghostEscape_%s.png' %self.color))
+        #TODO: Update score
         print('%s Ghost Escaped' %self.color)
 
     def die(self):
         self.isAlive = False
         self.image = pygame.image.load(
             os.path.join('images','ghostDie.png'))#_%s.png' %self.color))
+        #TODO: Update score
         print('%s Ghost Died' %self.color)
 
     def limbo(self):
@@ -102,7 +109,14 @@ def main():
         for event in pygame.event.get():
             if event.type == pyglocals.QUIT or (event.type == pyglocals.KEYUP and event.key == pyglocals.K_ESCAPE):
                 pygame.quit()
-
+            # Check every UPDATETIME milliseconds to see if something needs to be checked
+            if event.type == UPDATETIMER:
+                #TODO: Randomly birth ghosts (assuming ghost is in limbo/not alive)
+                #TODO: Check for any ghost killed (update score)
+                #TODO: Check for any ghost escapes (update score)
+                #TODO: Update the game clock display
+                #TODO: Check if game has ended
+                print 'Checked'
             #TEST: births
             elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_1:
                 ghosts[0].born(1)
@@ -125,6 +139,7 @@ def main():
                 ghosts[3].die()
             elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_t:
                 ghosts[4].die()
+
         # Update the screen
         clock.tick(FPS)
         screen.fill(BLACK)
