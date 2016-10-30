@@ -1,6 +1,16 @@
 # Whack-A-Ghost
 # VictorLoren
 
+import pygame
+import pygame.locals as pyglocals
+
+
+FPS = 5  # game has very simple animations and requires only slow refreshes
+WINDOWWIDTH = 1920  # game will take up whole screen on decent monitor
+WINDOWHEIGHT = 1200
+
+#
+BLACK = (0,0,0)
 
 class Ghost(pygame.sprite.Sprite):
     """A ghost that will born and then escape if her lifespan finishes or dies
@@ -22,7 +32,8 @@ class Ghost(pygame.sprite.Sprite):
 
     def __init__(self, color, vector, points=1):
         pygame.sprite.Sprite.__init__(self)
-        self.image, self.rect = load_png('ghost_%s.png' %color)
+        self.image = pygame.image.load('ghost_%s.png' %color)
+        self.rect = self.image.get_rect()
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.vector = vector
@@ -40,3 +51,27 @@ class Ghost(pygame.sprite.Sprite):
     def die(self):
         self.isAlive = False
         pass
+
+
+
+def main():
+    # Initialize a black screen
+    pygame.init()
+    screen = pygame.display.set_mode((WINDOWWIDTH,WINDOWHEIGHT))
+    pygame.display.set_caption('Whack-A-Ghost')
+    background = pygame.Surface(screen.get_size())
+    background = background.convert()
+    background.fill(BLACK)
+
+    clock = pygame.time.Clock()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pyglocals.QUIT or (event.type == pyglocals.KEYUP and event.key == pyglocals.K_ESCAPE):
+                pygame.quit()
+
+        pygame.display.update()
+        clock.tick(FPS)
+
+if __name__ == '__main__':
+    main()
