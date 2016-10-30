@@ -4,6 +4,9 @@
 import pygame
 import pygame.locals as pyglocals
 import os
+from random import random as rand
+from random import shuffle
+
 
 FPS = 10  # game has very simple animations and requires only slow refreshes
 WINDOWWIDTH = 1600  # game will take up whole screen on decent monitor
@@ -11,6 +14,17 @@ WINDOWHEIGHT = 900
 
 # Color definitions
 BLACK = (0,0,0)
+
+# Levels
+LEVELEASY = 0
+LEVELMEDI = 1
+LEVELHARD = 2
+
+# Lifespan constraints (in ms)
+LIFEMIN = 500
+LIFEMAX = 1800
+
+GAMETIME = 45
 
 # Timer to check if things have changed in past 1/10th second or 100ms
 UPDATETIMER, UPDATETIME = pygame.USEREVENT+1, 100
@@ -26,7 +40,6 @@ class GameInfo():
         score: Integer of the current score. Starts at 0.
         ghostsAlive: List of Ghost objects that are currently alive
     '''
-    GAMETIME = 45
     def __init__(self, level, timeLeft=GAMETIME):
         self.level = level
         self.timeLeft = timeLeft
@@ -51,13 +64,13 @@ class GameInfo():
         '''Returns which Ghost objects are currently alive.'''
         return self.ghostsAlive
 
-    def ghostBorn(self,ghost):
-        '''Add newly born ghost to ghostAlive list.
+    def ghostBorn(self,ghost,lifespan):
+        '''Add newly born ghost to ghostsAlive list.
 
         Args:
             ghost: Ghost object that was birthed
         '''
-        ghost.born()
+        ghost.born(lifespan)
         self.ghostsAlive += [ghost]
 
     def ghostEscape(self,ghost):
@@ -153,6 +166,20 @@ def getPosition(x,y):
     '''
     return (x*int(WINDOWWIDTH * 0.01), y*int(WINDOWHEIGHT * 0.01))
 
+
+def randomBirth(aliveGhosts, allGhosts, lifespan=0):
+    '''Birth a random ghost (who isn't alive) with a random lifespan.'''
+    if lifespan == 0:
+        # Create a lifespan between LIFEMIN and LIFEMAX
+        lifespan = rand() * (LIFEMAX-LIFEMIN) + LIFEMIN
+        #TODO: Level decides lifespan too
+    # Pick random ghost and check she is not alive
+    shuffle(allGhosts)
+    for ghost in allGhosts:  # shuffles ghosts (references originals)
+        if ghost not in aliveGhosts:
+            newGhost = ghost
+    return newGhost,lifespan
+
 def main():
     # Initialize a black screen
     pygame.init()
@@ -162,7 +189,13 @@ def main():
     background = background.convert()
     background.fill(BLACK)
 
+    # Time keepers
     clock = pygame.time.Clock()
+
+    # Create game
+    game = GameInfo(LEVELMEDI)
+    game.startGame(LEVELMEDI)
+
     # Create ghosts
     ghosts = [
         Ghost('white', getPosition(5,15)),
@@ -179,7 +212,13 @@ def main():
                 pygame.quit()
             # Check every UPDATETIME milliseconds to see if something needs to be checked
             if event.type == UPDATETIMER:
-                #TODO: Randomly birth ghosts (assuming ghost is in limbo/not alive)
+                # Randomly birth ghosts (assuming ghost is in limbo/not alive)
+                # Make sure not all ghosts are alive
+                if len(game.ghostsAlive) != len(ghosts) \
+                   and rand() > 0.8:  # only produce a ghost sometimes
+                    # Make copy of ghosts so it doesn't get shuffled
+                    babyGhost,lifespan = randomBirth(game.ghostsAlive,ghosts[:])
+                    game.ghostBorn(babyGhost,lifespan)
                 #TODO: Check for any ghost killed (update score)
                 #TODO: Check for any ghost escapes (update score)
                 #TODO: Update the game clock display
