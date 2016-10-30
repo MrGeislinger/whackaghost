@@ -24,7 +24,7 @@ LEVELHARD = 2
 LIFEMIN = 500
 LIFEMAX = 1800
 
-GAMETIME = 45
+GAMETIME = 15
 
 # Timer to check if things have changed in past 1/10th second or 100ms
 UPDATETIMER, UPDATETIME = pygame.USEREVENT+1, 100
@@ -228,10 +228,11 @@ def main():
     myfont = pygame.font.SysFont("monospace", 50)
     labelScore = myfont.render("Score: %d" %game.getScore(), 1, (255,0,0))
     labelTimer = myfont.render("Timer: %d" %game.getTime(), 1, (255,0,0))
+    labelGameOver = myfont.render("GAME OVER", 1, (255,0,0))
 
 
 
-    while True:
+    while (not game.isGameOver):
         for event in pygame.event.get():
             if event.type == pyglocals.QUIT or (event.type == pyglocals.KEYUP and event.key == pyglocals.K_ESCAPE):
                 pygame.quit()
@@ -253,12 +254,14 @@ def main():
                         ghostLifeClock[ghost] = 0  # reset life
                 #Update the game clock display
                 msPassed += UPDATETIME  # increase time passed
-                if msPassed > 1000:  # One second has passed
+                if msPassed >= 1000:  # One second has passed
                     #
                     msPassed = 0
                     game.updateTime(game.getTime()-1)
                     labelTimer = myfont.render("Timer: %d" %game.getTime(), 1, (255,0,0))
                 #TODO: Check if game has ended
+                if game.getTime() == 0:
+                    game.endGame()
                 print 'Checked'
             #TEST: births
             elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_1:
@@ -292,6 +295,19 @@ def main():
 
         screen.blit(labelScore, posInPercent(5, 2))
         screen.blit(labelTimer, posInPercent(80, 2))
+        pygame.display.update()
+
+    #Game Over screen to start over
+    while True:
+        for event in pygame.event.get():
+            if event.type == pyglocals.QUIT or (event.type == pyglocals.KEYUP and event.key == pyglocals.K_ESCAPE):
+                pygame.quit()
+
+        screen.fill(BLACK)
+        labelFinalScore = myfont.render('Score: %d' %game.getScore(), 1, (255,0,0))
+        screen.blit(labelGameOver, posInPercent(40, 30))
+        screen.blit(labelFinalScore, posInPercent(40, 40))
+
         pygame.display.update()
 
 
