@@ -17,6 +17,74 @@ UPDATETIMER, UPDATETIME = pygame.USEREVENT+1, 100
 pygame.time.set_timer(UPDATETIMER, UPDATETIME)
 
 
+class GameInfo():
+    '''Reference to the current game being played.
+
+    Attributes:
+        level: Integer saying how hard this game is.
+        timeLeft: Integer of how many seconds left in the game.
+        score: Integer of the current score. Starts at 0.
+        ghostsAlive: List of Ghost objects that are currently alive
+    '''
+    GAMETIME = 45
+    def __init__(self, level, timeLeft=GAMETIME):
+        self.level = level
+        self.timeLeft = timeLeft
+        self.isGameOver = False
+        self.score = 0
+        self.ghostsAlive = []
+
+    def endGame(self):
+        '''Game has finished so reset all parts except score.'''
+        self.isGameOver = True
+        self.ghostsAlive = []
+
+    def startGame(self,level):
+        '''Starts game after reseting attributes, thought level can change.'''
+        self.level = level
+        self.timeLeft = GAMETIME
+        self.isGameOver = False
+        self.score = 0
+        self.ghostsAlive = []
+
+    def whosAlive(self):
+        '''Returns which Ghost objects are currently alive.'''
+        return self.ghostsAlive
+
+    def ghostBorn(self,ghost):
+        '''Add newly born ghost to ghostAlive list.
+
+        Args:
+            ghost: Ghost object that was birthed
+        '''
+        ghost.born()
+        self.ghostsAlive += [ghost]
+
+    def ghostEscape(self,ghost):
+        '''When a ghost escapes because her lifespan is up, (potentially)
+        update the score and remove previously living ghost from ghostsAlive
+        list. Note a ghost can only escape if it was already alive.
+
+        Args:
+            ghost: Ghost object to be killed
+        '''
+        self.ghostsAlive.remove(ghost)
+        self.score += ghost.points
+        ghost.escape()
+
+    def killGhost(self,ghost):
+        '''When a ghost is killed, update the score and remove previously
+        living ghost from ghostsAlive list. Note a ghost can only be killed if
+        it was already alive.
+
+        Args:
+            ghost: Ghost object to be killed
+        '''
+        self.ghostsAlive.remove(ghost)
+        self.score += ghost.points
+        ghost.die()
+
+
 class Ghost(pygame.sprite.Sprite):
     '''A ghost that will born and then escape if her lifespan finishes or dies
     if she is killed.
