@@ -47,6 +47,19 @@ class GameInfo():
         self.score = 0
         self.ghostsAlive = []
 
+    def getScore(self):
+        '''Return the score of current game.'''
+        return self.score
+
+    def updateTime(self,timeLeft):
+        '''Update game clock to new integer/seconds left.'''
+        assert type(timeLeft) == type(0)
+        self.timeLeft = timeLeft
+
+    def getTime(self):
+        '''Return how much game time is left in seconds (integer).'''
+        return self.timeLeft
+
     def endGame(self):
         '''Game has finished so reset all parts except score.'''
         self.isGameOver = True
@@ -157,7 +170,7 @@ class Ghost(pygame.sprite.Sprite):
         print('%s Ghost went to Limbo' %self.color)
 
 
-def getPosition(x,y):
+def posInPercent(x,y):
     '''Defines a vector/position based on the size of the screen.
     Args:
         x: Percent to the right of the screen to define the x-coordinate
@@ -192,15 +205,16 @@ def main():
 
     # Create ghosts
     ghosts = [
-        Ghost('white', getPosition(5,15)),
-        Ghost('green', getPosition(15,50)),
-        Ghost('yellow', getPosition(45,70)),
-        Ghost('red', getPosition(65,50)),
-        Ghost('blue', getPosition(75,15))
+        Ghost('white', posInPercent(5,15)),
+        Ghost('green', posInPercent(15,50)),
+        Ghost('yellow', posInPercent(45,70)),
+        Ghost('red', posInPercent(65,50)),
+        Ghost('blue', posInPercent(75,15))
     ]
 
     # Time keepers
     clock = pygame.time.Clock()
+    msPassed = 0 # Keep time until next second (1000ms)
     ghostLifeClock = {}  # tracks how long ghost is alive
     for i,ghost in enumerate(ghosts):
         ghostLifeClock[ghost] = 0
@@ -210,6 +224,10 @@ def main():
     game = GameInfo(LEVELMEDI)
     game.startGame(LEVELMEDI)
 
+    # Text for game
+    myfont = pygame.font.SysFont("monospace", 50)
+    labelScore = myfont.render("Score: %d" %game.getScore(), 1, (255,0,0))
+    labelTimer = myfont.render("Timer: %d" %game.getTime(), 1, (255,0,0))
 
 
 
@@ -233,8 +251,13 @@ def main():
                     if ghostLifeClock[ghost] > ghost.lifespan:  #time to escape
                         game.ghostEscape(ghost)
                         ghostLifeClock[ghost] = 0  # reset life
-
-                #TODO: Update the game clock display
+                #Update the game clock display
+                msPassed += UPDATETIME  # increase time passed
+                if msPassed > 1000:  # One second has passed
+                    #
+                    msPassed = 0
+                    game.updateTime(game.getTime()-1)
+                    labelTimer = myfont.render("Timer: %d" %game.getTime(), 1, (255,0,0))
                 #TODO: Check if game has ended
                 print 'Checked'
             #TEST: births
@@ -265,6 +288,10 @@ def main():
         screen.fill(BLACK)
         for ghost in ghosts:
             screen.blit(ghost.image, ghost.position)
+
+
+        screen.blit(labelScore, posInPercent(5, 2))
+        screen.blit(labelTimer, posInPercent(80, 2))
         pygame.display.update()
 
 
