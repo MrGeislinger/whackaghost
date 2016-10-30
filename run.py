@@ -82,7 +82,7 @@ class GameInfo():
             ghost: Ghost object to be killed
         '''
         self.ghostsAlive.remove(ghost)
-        self.score += ghost.points
+        # self.score -= ghost.points
         ghost.escape()
 
     def killGhost(self,ghost):
@@ -128,22 +128,23 @@ class Ghost(pygame.sprite.Sprite):
         self.isAlive = False
 
     def born(self,lifespan):
+        self.lifespan = lifespan
         self.isAlive = True
         self.image = pygame.image.load(
             os.path.join('images','ghost_%s.png' %self.color))
-        print('%s Ghost Born' %self.color)
+        print('%s Ghost Born - Lifespan: %s' %(self.color,self.lifespan))
 
     def escape(self):
         self.isAlive = False
         self.image = pygame.image.load(
-            os.path.join('images','ghostEscape_%s.png' %self.color))
+            os.path.join('images','ghostEscape.png'))
         #TODO: Update score
         print('%s Ghost Escaped' %self.color)
 
     def die(self):
         self.isAlive = False
         self.image = pygame.image.load(
-            os.path.join('images','ghostDie.png'))#_%s.png' %self.color))
+            os.path.join('images','ghostDie.png'))
         #TODO: Update score
         print('%s Ghost Died' %self.color)
 
@@ -171,7 +172,7 @@ def randomBirth(aliveGhosts, allGhosts, lifespan=0):
     '''Birth a random ghost (who isn't alive) with a random lifespan.'''
     if lifespan == 0:
         # Create a lifespan between LIFEMIN and LIFEMAX
-        lifespan = rand() * (LIFEMAX-LIFEMIN) + LIFEMIN
+        lifespan = int(rand() * (LIFEMAX-LIFEMIN) + LIFEMIN)
         #TODO: Level decides lifespan too
     # Pick random ghost and check she is not alive
     shuffle(allGhosts)
@@ -189,13 +190,6 @@ def main():
     background = background.convert()
     background.fill(BLACK)
 
-    # Time keepers
-    clock = pygame.time.Clock()
-
-    # Create game
-    game = GameInfo(LEVELMEDI)
-    game.startGame(LEVELMEDI)
-
     # Create ghosts
     ghosts = [
         Ghost('white', getPosition(5,15)),
@@ -204,6 +198,19 @@ def main():
         Ghost('red', getPosition(65,50)),
         Ghost('blue', getPosition(75,15))
     ]
+
+    # Time keepers
+    clock = pygame.time.Clock()
+    ghostLifeClock = {}  # tracks how long ghost is alive
+    for i,ghost in enumerate(ghosts):
+        ghostLifeClock[ghost] = 0
+
+
+    # Create game
+    game = GameInfo(LEVELMEDI)
+    game.startGame(LEVELMEDI)
+
+
 
 
     while True:
@@ -214,13 +221,19 @@ def main():
             if event.type == UPDATETIMER:
                 # Randomly birth ghosts (assuming ghost is in limbo/not alive)
                 # Make sure not all ghosts are alive
-                if len(game.ghostsAlive) != len(ghosts) \
+                if len(game.whosAlive()) != len(ghosts) \
                    and rand() > 0.8:  # only produce a ghost sometimes
                     # Make copy of ghosts so it doesn't get shuffled
-                    babyGhost,lifespan = randomBirth(game.ghostsAlive,ghosts[:])
+                    babyGhost,lifespan = randomBirth(game.whosAlive(),ghosts[:])
                     game.ghostBorn(babyGhost,lifespan)
                 #TODO: Check for any ghost killed (update score)
                 #TODO: Check for any ghost escapes (update score)
+                for ghost in game.whosAlive():
+                    ghostLifeClock[ghost] += UPDATETIME
+                    if ghostLifeClock[ghost] > ghost.lifespan:  #time to escape
+                        game.ghostEscape(ghost)
+                        ghostLifeClock[ghost] = 0  # reset life
+
                 #TODO: Update the game clock display
                 #TODO: Check if game has ended
                 print 'Checked'
