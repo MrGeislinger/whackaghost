@@ -8,7 +8,7 @@ from random import random as rand
 from random import shuffle
 
 
-FPS = 10  # game has very simple animations and requires only slow refreshes
+FPS = 50  # game has very simple animations and requires only slow refreshes
 WINDOWWIDTH = 1600  # game will take up whole screen on decent monitor
 WINDOWHEIGHT = 900
 
@@ -21,13 +21,15 @@ LEVELMEDI = 1
 LEVELHARD = 2
 
 # Lifespan constraints (in ms)
-LIFEMIN = 500
-LIFEMAX = 1800
+LIFEMIN = 1800
+LIFEMAX = 2500
+REBIRTHTIME = 800  # time to wait until rebirth
 
-GAMETIME = 15
+GAMETIME = 45
 
 # Timer to check if things have changed in past 1/10th second or 100ms
-UPDATETIMER, UPDATETIME = pygame.USEREVENT+1, 100
+UPDATETIMER = pygame.USEREVENT+1
+UPDATETIME = int(1000 / FPS)  # each tick will match about every update
 pygame.time.set_timer(UPDATETIMER, UPDATETIME)
 
 
@@ -83,6 +85,7 @@ class GameInfo():
         Args:
             ghost: Ghost object that was birthed
         '''
+        lifespan = int(50 * round(float(lifespan)/50)) #
         ghost.born(lifespan)
         self.ghostsAlive += [ghost]
 
@@ -110,6 +113,8 @@ class GameInfo():
         self.score += ghost.points
         ghost.die()
 
+    def falseStart(self):
+        self.score -= 1
 
 class Ghost(pygame.sprite.Sprite):
     '''A ghost that will born and then escape if her lifespan finishes or dies
@@ -151,14 +156,12 @@ class Ghost(pygame.sprite.Sprite):
         self.isAlive = False
         self.image = pygame.image.load(
             os.path.join('images','ghostEscape.png'))
-        #TODO: Update score
         print('%s Ghost Escaped' %self.color)
 
     def die(self):
         self.isAlive = False
         self.image = pygame.image.load(
             os.path.join('images','ghostDie.png'))
-        #TODO: Update score
         print('%s Ghost Died' %self.color)
 
     def limbo(self):
@@ -218,6 +221,10 @@ def main():
     ghostLifeClock = {}  # tracks how long ghost is alive
     for i,ghost in enumerate(ghosts):
         ghostLifeClock[ghost] = 0
+    # how long until ghost can regenerate
+    ghostLimboClock = {}
+    for i,ghost in enumerate(ghosts):
+        ghostLimboClock[ghost] = REBIRTHTIME
 
 
     # Create game
@@ -236,17 +243,51 @@ def main():
         for event in pygame.event.get():
             if event.type == pyglocals.QUIT or (event.type == pyglocals.KEYUP and event.key == pyglocals.K_ESCAPE):
                 pygame.quit()
+            #TEST: deaths
+            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_1:
+                if ghosts[0].isAlive:
+                    game.killGhost(ghosts[0])
+                else:
+                    game.falseStart()
+            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_2:
+                if ghosts[1].isAlive:
+                    game.killGhost(ghosts[1])
+                else:
+                    game.falseStart()
+            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_3:
+                if ghosts[2].isAlive:
+                    game.killGhost(ghosts[2])
+                else:
+                    game.falseStart()
+            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_4:
+                if ghosts[3].isAlive:
+                    game.killGhost(ghosts[3])
+                else:
+                    game.falseStart()
+            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_5:
+                if ghosts[4].isAlive:
+                    game.killGhost(ghosts[4])
+                else:
+                    game.falseStart()
             # Check every UPDATETIME milliseconds to see if something needs to be checked
-            if event.type == UPDATETIMER:
+            elif event.type == UPDATETIMER:
                 # Randomly birth ghosts (assuming ghost is in limbo/not alive)
+                # Allow ghosts have had enough refresh time
+                for limboGhost in set(game.whosAlive()).symmetric_difference(set(ghosts)):
+                    print '*In Limbo %s:%d' %(limboGhost.color,ghostLimboClock[limboGhost])
+                    ghostLimboClock[limboGhost] += UPDATETIME
                 # Make sure not all ghosts are alive
                 if len(game.whosAlive()) != len(ghosts) \
-                   and rand() > 0.8:  # only produce a ghost sometimes
+                   and rand() > 0.9:  # only produce a ghost sometimes
                     # Make copy of ghosts so it doesn't get shuffled
                     babyGhost,lifespan = randomBirth(game.whosAlive(),ghosts[:])
-                    game.ghostBorn(babyGhost,lifespan)
+                    # Check that there has been enough time to respawn
+                    if ghostLimboClock[ghost] > REBIRTHTIME:
+                        ghostLimboClock[ghost] = 0  # reset time in limbo
+                        game.ghostBorn(babyGhost,lifespan)
                 #TODO: Check for any ghost killed (update score)
-                #TODO: Check for any ghost escapes (update score)
+                labelScore = myfont.render("Score: %d" %game.getScore(), 1, (255,0,0))
+                #Check for any ghost escapes (update score)
                 for ghost in game.whosAlive():
                     ghostLifeClock[ghost] += UPDATETIME
                     if ghostLifeClock[ghost] > ghost.lifespan:  #time to escape
@@ -255,36 +296,16 @@ def main():
                 #Update the game clock display
                 msPassed += UPDATETIME  # increase time passed
                 if msPassed >= 1000:  # One second has passed
-                    #
                     msPassed = 0
                     game.updateTime(game.getTime()-1)
                     labelTimer = myfont.render("Timer: %d" %game.getTime(), 1, (255,0,0))
+                    print 'Time changed: %d seconds' %game.getTime()
                 #TODO: Check if game has ended
                 if game.getTime() == 0:
                     game.endGame()
-                print 'Checked'
-            #TEST: births
-            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_1:
-                ghosts[0].born(1)
-            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_2:
-                ghosts[1].born(1)
-            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_3:
-                ghosts[2].born(1)
-            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_4:
-                ghosts[3].born(1)
-            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_5:
-                ghosts[4].born(1)
-            #TEST: deaths
-            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_q:
-                ghosts[0].die()
-            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_w:
-                ghosts[1].die()
-            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_e:
-                ghosts[2].die()
-            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_r:
-                ghosts[3].die()
-            elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_t:
-                ghosts[4].die()
+                    print 'Game Over'
+                print '---------------check %d' %(game.getTime()*1000 - msPassed)
+
 
         # Update the screen
         clock.tick(FPS)
