@@ -358,7 +358,7 @@ def main():
                                     GPIO.output(led, False)
                                 pygame.quit()
                             elif (event.type == pyglocals.KEYUP and event.key == pyglocals.K_SPACE):
-                                game.startGame()
+                                game.startGame(LEVELMEDI)
 
                         screen.fill(BLACK)
                         labelFinalScore = myfont.render('Score: %d' %game.getScore(), 1, RED)
