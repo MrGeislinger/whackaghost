@@ -7,7 +7,7 @@ import os
 from random import random as rand
 from random import shuffle
 
-
+# Screen definitions
 FPS = 50  # game has very simple animations and requires only slow refreshes
 WINDOWWIDTH = 1600  # game will take up whole screen on decent monitor
 WINDOWHEIGHT = 900
@@ -32,6 +32,8 @@ UPDATETIMER = pygame.USEREVENT+1
 UPDATETIME = int(1000 / FPS)  # each tick will match about every update
 pygame.time.set_timer(UPDATETIMER, UPDATETIME)
 
+# Point definitions
+MISFIREPOINT = 1  # loses this many points on misfire
 
 class GameInfo():
     '''Reference to the current game being played.
@@ -87,6 +89,7 @@ class GameInfo():
         '''
         lifespan = int(50 * round(float(lifespan)/50)) #
         ghost.born(lifespan)
+        #TODO: Turn proper LED on
         self.ghostsAlive += [ghost]
 
     def ghostEscape(self,ghost):
@@ -98,6 +101,7 @@ class GameInfo():
             ghost: Ghost object to be killed
         '''
         self.ghostsAlive.remove(ghost)
+        #TODO: Turn proper LED off
         # self.score -= ghost.points
         ghost.escape()
 
@@ -110,11 +114,13 @@ class GameInfo():
             ghost: Ghost object to be killed
         '''
         self.ghostsAlive.remove(ghost)
+        #TODO: Turn proper LED off
         self.score += ghost.points
         ghost.die()
 
-    def falseStart(self):
-        self.score -= 1
+    def misfire(self):
+        '''Subtract points since the player attempted a kill on non-living ghost'''
+        self.score -= MISFIREPOINT
 
 class Ghost(pygame.sprite.Sprite):
     '''A ghost that will born and then escape if her lifespan finishes or dies
@@ -248,27 +254,27 @@ def main():
                 if ghosts[0].isAlive:
                     game.killGhost(ghosts[0])
                 else:
-                    game.falseStart()
+                    game.misfire()
             elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_2:
                 if ghosts[1].isAlive:
                     game.killGhost(ghosts[1])
                 else:
-                    game.falseStart()
+                    game.misfire()
             elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_3:
                 if ghosts[2].isAlive:
                     game.killGhost(ghosts[2])
                 else:
-                    game.falseStart()
+                    game.misfire()
             elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_4:
                 if ghosts[3].isAlive:
                     game.killGhost(ghosts[3])
                 else:
-                    game.falseStart()
+                    game.misfire()
             elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_5:
                 if ghosts[4].isAlive:
                     game.killGhost(ghosts[4])
                 else:
-                    game.falseStart()
+                    game.misfire()
             # Check every UPDATETIME milliseconds to see if something needs to be checked
             elif event.type == UPDATETIMER:
                 # Randomly birth ghosts (assuming ghost is in limbo/not alive)
