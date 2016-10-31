@@ -241,11 +241,11 @@ def main():
 
     #TODO: Setup LEDs to represent living ghosts
     ledMap = {
-        ghosts[0]:2,
+        ghosts[0]:7,
         ghosts[1]:24,
         ghosts[2]:23,
         ghosts[3]:25,
-        ghosts[4]:3
+        ghosts[4]:8
     }
     # Setup the GPIO for LED
     for v in ledMap.values():
