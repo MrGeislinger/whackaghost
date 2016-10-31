@@ -53,6 +53,13 @@ class GameInfo():
         self.isGameOver = False
         self.score = 0
         self.ghostsAlive = []
+        self.highscore = 0
+
+    def updateHighScore(self,newScore):
+        self.highscore = newScore if newScore > self.highscore
+
+    def getHighScore(self):
+        return self.highscore
 
     def getScore(self):
         '''Return the score of current game.'''
@@ -354,8 +361,11 @@ def main():
 
                         screen.fill(BLACK)
                         labelFinalScore = myfont.render('Score: %d' %game.getScore(), 1, RED)
+
+                        labelHighScore = myfont.render('High Score: %d' %game.getHighScore(), 1, RED)
                         screen.blit(labelGameOver, posInPercent(40, 30))
                         screen.blit(labelFinalScore, posInPercent(40, 40))
+                        screen.blit(labelHighScore, posInPercent(40, 40))
                         pygame.display.update()
 
                         # Small game over animation
