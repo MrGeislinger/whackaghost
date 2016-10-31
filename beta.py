@@ -83,7 +83,7 @@ class GameInfo():
         '''Returns which Ghost objects are currently alive.'''
         return self.ghostsAlive
 
-    def ghostBorn(self,ghost,lifespan):
+    def ghostBorn(self,ghost,lifespan,ledMap):
         '''Add newly born ghost to ghostsAlive list.
 
         Args:
@@ -92,9 +92,10 @@ class GameInfo():
         lifespan = int(50 * round(float(lifespan)/50)) #
         ghost.born(lifespan)
         #TODO: Turn proper LED on
+        GPIO.output(ledMap[ghost], True)
         self.ghostsAlive += [ghost]
 
-    def ghostEscape(self,ghost):
+    def ghostEscape(self,ghost,ledMap):
         '''When a ghost escapes because her lifespan is up, (potentially)
         update the score and remove previously living ghost from ghostsAlive
         list. Note a ghost can only escape if it was already alive.
@@ -104,10 +105,11 @@ class GameInfo():
         '''
         self.ghostsAlive.remove(ghost)
         #TODO: Turn proper LED off
+        GPIO.output(ledMap[ghost], False)
         # self.score -= ghost.points
         ghost.escape()
 
-    def killGhost(self,ghost):
+    def killGhost(self,ghost,ledMap):
         '''When a ghost is killed, update the score and remove previously
         living ghost from ghostsAlive list. Note a ghost can only be killed if
         it was already alive.
@@ -117,6 +119,7 @@ class GameInfo():
         '''
         self.ghostsAlive.remove(ghost)
         #TODO: Turn proper LED off
+        GPIO.output(ledMap[ghost], False)
         self.score += ghost.points
         ghost.die()
 
