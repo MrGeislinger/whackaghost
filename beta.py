@@ -279,33 +279,9 @@ def main():
     while (not game.isGameOver):
         for event in pygame.event.get():
             if event.type == pyglocals.QUIT or (event.type == pyglocals.KEYUP and event.key == pyglocals.K_ESCAPE):
+                for led in ledMap.values():
+                    GPIO.output(led, False)
                 pygame.quit()
-            #TEST: deaths
-            # elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_1:
-            #     if ghosts[0].isAlive:
-            #         game.killGhost(ghosts[0])
-            #     else:
-            #         game.misfire()
-            # elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_2:
-            #     if ghosts[1].isAlive:
-            #         game.killGhost(ghosts[1])
-            #     else:
-            #         game.misfire()
-            # elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_3:
-            #     if ghosts[2].isAlive:
-            #         game.killGhost(ghosts[2])
-            #     else:
-            #         game.misfire()
-            # elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_4:
-            #     if ghosts[3].isAlive:
-            #         game.killGhost(ghosts[3])
-            #     else:
-            #         game.misfire()
-            # elif event.type == pyglocals.KEYUP and event.key == pyglocals.K_5:
-            #     if ghosts[4].isAlive:
-            #         game.killGhost(ghosts[4])
-            #     else:
-            #         game.misfire()
 
             # Scan the buttons for a press
             for (k,ghost) in button_map.items():
@@ -350,6 +326,9 @@ def main():
                 #TODO: Check if game has ended
                 if game.getTime() == 0:
                     game.endGame()
+                    # Turn off all LEDs
+                    for led in ledMap.values():
+                        GPIO.output(led, False)
                     print 'Game Over'
                 print '---------------check %d' %(game.getTime()*1000 - msPassed)
 
@@ -369,7 +348,10 @@ def main():
     while True:
         for event in pygame.event.get():
             if event.type == pyglocals.QUIT or (event.type == pyglocals.KEYUP and event.key == pyglocals.K_ESCAPE):
+                for led in ledMap.values():
+                    GPIO.output(led, False)
                 pygame.quit()
+
 
         screen.fill(BLACK)
         labelFinalScore = myfont.render('Score: %d' %game.getScore(), 1, RED)
