@@ -35,7 +35,7 @@ UPDATETIME = int(1000 / FPS)  # each tick will match about every update
 pygame.time.set_timer(UPDATETIMER, UPDATETIME)
 
 # Point definitions
-MISFIREPOINT = 1  # loses this many points on misfire
+MISFIREPOINT = 0  # loses this many points on misfire
 
 class GameInfo():
     '''Reference to the current game being played.
