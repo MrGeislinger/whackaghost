@@ -26,6 +26,7 @@ LEVELHARD = 2
 LIFEMIN = 1800
 LIFEMAX = 2500
 REBIRTHTIME = 800  # time to wait until rebirth
+DEATHANIMATIONTIME = 600  # time to allow for death animation to exist
 
 GAMETIME = 45
 
@@ -263,7 +264,6 @@ def main():
     for i,ghost in enumerate(ghosts):
         ghostLimboClock[ghost] = REBIRTHTIME
 
-
     # Create game
     game = GameInfo(LEVELMEDI)
     game.startGame(LEVELMEDI)
@@ -299,6 +299,9 @@ def main():
                 for limboGhost in set(game.whosAlive()).symmetric_difference(set(ghosts)):
                     print '*In Limbo %s:%d' %(limboGhost.color,ghostLimboClock[limboGhost])
                     ghostLimboClock[limboGhost] += UPDATETIME
+                    # Set dead ghost to proper image/state
+                    if ghostLimboClock[limboGhost] > DEATHANIMATIONTIME:
+                        limboGhost.limbo()
                 # Make sure not all ghosts are alive
                 if len(game.whosAlive()) != len(ghosts) \
                    and rand() > 0.9:  # only produce a ghost sometimes
