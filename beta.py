@@ -56,7 +56,8 @@ class GameInfo():
         self.highscore = 0
 
     def updateHighScore(self,newScore):
-        self.highscore = newScore if newScore > self.highscore
+        if newScore > self.highscore:
+            self.highscore = newScore
 
     def getHighScore(self):
         return self.highscore
@@ -365,7 +366,7 @@ def main():
                         labelHighScore = myfont.render('High Score: %d' %game.getHighScore(), 1, RED)
                         screen.blit(labelGameOver, posInPercent(40, 30))
                         screen.blit(labelFinalScore, posInPercent(40, 40))
-                        screen.blit(labelHighScore, posInPercent(40, 40))
+                        screen.blit(labelHighScore, posInPercent(40, 50))
                         pygame.display.update()
 
                         # Small game over animation
