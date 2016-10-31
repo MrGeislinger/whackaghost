@@ -240,7 +240,7 @@ def main():
         GPIO.setup(k, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     #TODO: Setup LEDs to represent living ghosts
-    led_map = {
+    ledMap = {
         ghosts[0]:2,
         ghosts[1]:24,
         ghosts[2]:23,
@@ -248,7 +248,7 @@ def main():
         ghosts[4]:3
     }
     # Setup the GPIO for LED
-    for v in led_map.values():
+    for v in ledMap.values():
         GPIO.setup(v, GPIO.OUT)
 
 
@@ -311,7 +311,7 @@ def main():
             for (k,ghost) in button_map.items():
                 if GPIO.input(k) == False:  # button is pushed
                     if ghost.isAlive:
-                        game.killGhost(ghost)
+                        game.killGhost(ghost,ledMap)
                     else:
                         game.misfire()
                     # pygame.display.update()
@@ -331,14 +331,14 @@ def main():
                     # Check that there has been enough time to respawn
                     if ghostLimboClock[ghost] > REBIRTHTIME:
                         ghostLimboClock[ghost] = 0  # reset time in limbo
-                        game.ghostBorn(babyGhost,lifespan)
+                        game.ghostBorn(babyGhost,lifespan,ledMap)
                 #TODO: Check for any ghost killed (update score)
                 labelScore = myfont.render("Score: %d" %game.getScore(), 1, RED)
                 #Check for any ghost escapes (update score)
                 for ghost in game.whosAlive():
                     ghostLifeClock[ghost] += UPDATETIME
                     if ghostLifeClock[ghost] > ghost.lifespan:  #time to escape
-                        game.ghostEscape(ghost)
+                        game.ghostEscape(ghost,ledMap)
                         ghostLifeClock[ghost] = 0  # reset life
                 #Update the game clock display
                 msPassed += UPDATETIME  # increase time passed
