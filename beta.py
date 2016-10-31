@@ -245,7 +245,7 @@ def main():
         ghosts[4]:3
     }
     # Setup the GPIO for LED
-    for v in button_map.values():
+    for v in led_map.values():
         GPIO.setup(v, GPIO.OUT)
 
 
@@ -314,7 +314,7 @@ def main():
                     # pygame.display.update()
 
             # Check every UPDATETIME milliseconds to see if something needs to be checked
-            elif event.type == UPDATETIMER:
+            if event.type == UPDATETIMER:
                 # Randomly birth ghosts (assuming ghost is in limbo/not alive)
                 # Allow ghosts have had enough refresh time
                 for limboGhost in set(game.whosAlive()).symmetric_difference(set(ghosts)):
