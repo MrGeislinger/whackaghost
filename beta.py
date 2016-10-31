@@ -3,7 +3,7 @@
 
 import pygame
 import pygame.locals as pyglocals
-import os
+import os, time
 import RPi.GPIO as GPIO
 from random import random as rand
 from random import shuffle
@@ -326,13 +326,56 @@ def main():
                     game.updateTime(game.getTime()-1)
                     labelTimer = myfont.render("Timer: %d" %game.getTime(), 1, RED)
                     print 'Time changed: %d seconds' %game.getTime()
-                #TODO: Check if game has ended
                 if game.getTime() == 0:
                     game.endGame()
+
+                    # Reset Timers/Checkers
+                    msPassed = 0
+                    for i,ghost in enumerate(ghosts):
+                        ghostLifeClock[ghost] = 0
+                    # How long until ghost can regenerate
+                    for i,ghost in enumerate(ghosts):
+                        ghostLimboClock[ghost] = REBIRTHTIME
+
                     # Turn off all LEDs
                     for led in ledMap.values():
                         GPIO.output(led, False)
                     print 'Game Over'
+
+                    # Game Over screen to start over
+                    while (game.isGameOver):
+                        for event in pygame.event.get():
+                            if event.type == pyglocals.QUIT or (event.type == pyglocals.KEYUP and event.key == pyglocals.K_ESCAPE):
+                                for led in ledMap.values():
+                                    GPIO.output(led, False)
+                                pygame.quit()
+                            elif (event.type == pyglocals.KEYUP and event.key == pyglocals.K_SPACE):
+                                game.startGame()
+
+                        screen.fill(BLACK)
+                        labelFinalScore = myfont.render('Score: %d' %game.getScore(), 1, RED)
+                        screen.blit(labelGameOver, posInPercent(40, 30))
+                        screen.blit(labelFinalScore, posInPercent(40, 40))
+                        pygame.display.update()
+
+                        # Small game over animation
+                        screen.blit(myfont.render("GAME OVER.", 1, RED), posInPercent(40, 30))
+                        pygame.display.update()
+                        time.sleep(0.3)
+
+                        screen.blit(myfont.render("GAME OVER..", 1, RED), posInPercent(40, 30))
+                        pygame.display.update()
+                        time.sleep(0.3)
+
+                        screen.blit(myfont.render("GAME OVER...", 1, RED), posInPercent(40, 30))
+                        pygame.display.update()
+                        time.sleep(0.3)
+
+                        screen.blit(myfont.render("GAME OVER...?", 1, RED), posInPercent(40, 30))
+                        pygame.display.update()
+                        time.sleep(0.8)
+
+
                 print '---------------check %d' %(game.getTime()*1000 - msPassed)
 
 
@@ -347,21 +390,7 @@ def main():
         screen.blit(labelTimer, posInPercent(80, 2))
         pygame.display.update()
 
-    #Game Over screen to start over
-    while True:
-        for event in pygame.event.get():
-            if event.type == pyglocals.QUIT or (event.type == pyglocals.KEYUP and event.key == pyglocals.K_ESCAPE):
-                for led in ledMap.values():
-                    GPIO.output(led, False)
-                pygame.quit()
 
-
-        screen.fill(BLACK)
-        labelFinalScore = myfont.render('Score: %d' %game.getScore(), 1, RED)
-        screen.blit(labelGameOver, posInPercent(40, 30))
-        screen.blit(labelFinalScore, posInPercent(40, 40))
-
-        pygame.display.update()
 
 
 if __name__ == '__main__':
